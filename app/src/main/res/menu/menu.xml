@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <item android:title="Top rated"
+          android:id="@+id/top_rated"
+
+         />
+
+    <item android:title="Upcoming "
+          android:id="@+id/upcoming"
+         />
+
+    <item android:title="Popular movies"
+          android:id="@+id/popular_movies"
+        />
+    <item android:title="Popular TV shows"
+          android:id="@+id/Popular_TV_shows"
+        />
+    <item android:title="Top rated TV shows"
+          android:id="@+id/top_rated_TV_shows"
+        />
+
+</menu>

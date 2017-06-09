@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Moviefy</string>
+    <string name="navigation_drawer_opened">The navigation drawer is opened</string>
+    <string name="navigation_drawer_closed">The navigation drawer is closed</string>
+</resources>
