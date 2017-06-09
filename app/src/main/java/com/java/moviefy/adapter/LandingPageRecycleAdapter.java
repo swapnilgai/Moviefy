@@ -59,9 +59,16 @@ public class LandingPageRecycleAdapter extends ArrayRecyclerAdapter<Movies, View
                         .into(((DataResultHolder) holder).movieImage);
 
             // set movie title
+            if(movies.getTitle() != null)
             ((DataResultHolder)holder).movieTitle.setText(movies.getTitle());
+            else
+                ((DataResultHolder)holder).movieTitle.setText(movies.getName());
+
             // set movie release date
+            if(movies.getRelease_date() !=null)
             ((DataResultHolder) holder).movieDate.setText(movies.getRelease_date());
+            else
+                ((DataResultHolder) holder).movieDate.setText(movies.getFirst_air_date());
         }
     }
 

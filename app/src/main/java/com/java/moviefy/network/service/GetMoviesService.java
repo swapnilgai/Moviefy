@@ -2,7 +2,10 @@ package com.java.moviefy.network.service;
 
 import com.java.moviefy.entities.Result;
 
+import java.util.Map;
+
 import retrofit2.http.GET;
+import retrofit2.http.QueryMap;
 import rx.Observable;
 
 /**
@@ -11,7 +14,28 @@ import rx.Observable;
 
 public interface GetMoviesService {
 
-    @GET("discover/movie?primary_release_date.gte=2014-09-15&primary_release_date.lte=2014-10-22/550&api_key=a30dce60f5a5371622bab0e560ac8394")
-    Observable<Result> getMovieList();
+    // Get Upcoming movies
+    @GET("movie/upcoming")
+    Observable<Result> getUpcomingMovieList(@QueryMap Map<String, String> map);
+
+    // Get top rated movies
+    @GET("movie/top_rated")
+    Observable<Result> getTopRatedMovieList(@QueryMap Map<String, String> map);
+
+    ///Get Now playing movies
+    @GET("movie/now_playing")
+    Observable<Result> getNoePlayingMovielist(@QueryMap Map<String, String> map);
+
+    //@Get popular movies
+    @GET("movie/popular")
+    Observable<Result> getPopularMovieList(@QueryMap Map<String, String> map);
+
+    // Get top rated tv show
+    @GET("tv/popular")
+    Observable<Result> getPopularTvShows(@QueryMap Map<String, String> map);
+
+    // Get top rated tv show
+    @GET("tv/top_rated")
+    Observable<Result> getTopRatedTvShow(@QueryMap Map<String, String> map);
 
 }

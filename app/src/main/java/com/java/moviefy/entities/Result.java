@@ -14,7 +14,6 @@ public class Result implements Serializable {
     private  int total_pages;
     private  List<Movies> results;
 
-
     public int getPage() {
         return page;
     }

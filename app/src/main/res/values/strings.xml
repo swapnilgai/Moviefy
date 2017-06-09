@@ -2,4 +2,15 @@
     <string name="app_name">Moviefy</string>
     <string name="navigation_drawer_opened">The navigation drawer is opened</string>
     <string name="navigation_drawer_closed">The navigation drawer is closed</string>
+    <string name="api_key_value">a30dce60f5a5371622bab0e560ac8394</string>
+    <string name="api_key">api_key</string>
+    <string name="language">language</string>
+    <string name="en_US">en-US</string>
+    <string name="top_rated_movies">top_rated_movies</string>
+    <string name="upcoming_movies">upcoming_movies</string>
+    <string name="now_playing_movies">now_playing_movies</string>
+    <string name="popular_movies">popular_movies</string>
+    <string name="popular_tv_shows">popular_tv_shows</string>
+    <string name="top_rated_tv_shows">top_rated_tv_shows</string>
+
 </resources>
