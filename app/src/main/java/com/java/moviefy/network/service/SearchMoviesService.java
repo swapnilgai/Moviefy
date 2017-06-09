@@ -15,7 +15,7 @@ import rx.Observable;
 public interface SearchMoviesService {
 
     // Ger search result only for movies
-    @GET("/search/movie")
+    @GET("search/movie")
     Observable<Result> getSearchedMovieList(@QueryMap Map<String, String> map);
 
 }

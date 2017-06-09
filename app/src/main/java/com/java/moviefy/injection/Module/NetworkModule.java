@@ -2,10 +2,9 @@ package com.java.moviefy.injection.Module;
 
 import android.content.Context;
 
+import com.java.moviefy.injection.CustomeScope.ActivityScope;
 import com.java.moviefy.network.service.GetMoviesService;
 import com.java.moviefy.network.service.SearchMoviesService;
-
-import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -28,7 +27,7 @@ public class NetworkModule {
     }
 
 
-    @Provides @Singleton
+    @Provides @ActivityScope
     public Retrofit getRetrofit(Context context){
         return new Retrofit.Builder().addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
@@ -36,12 +35,12 @@ public class NetworkModule {
                 .build();
     }
 
-    @Provides @Singleton
+    @Provides @ActivityScope
     public GetMoviesService getMoviesService(Retrofit retrofit){
         return retrofit.create(GetMoviesService.class);
     }
 
-    @Provides @Singleton
+    @Provides @ActivityScope
     public SearchMoviesService getSearchMoviesService(Retrofit retrofit){
         return retrofit.create(SearchMoviesService.class);
     }

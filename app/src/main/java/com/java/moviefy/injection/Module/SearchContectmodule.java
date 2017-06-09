@@ -8,20 +8,20 @@ import dagger.Module;
 import dagger.Provides;
 
 /**
- * Created by swapnil on 6/8/17.
+ * Created by swapnil on 6/9/17.
  */
 
-
 @Module
-public class ContextModule {
+public class SearchContectmodule {
 
-    private Context context;
+    private  final Context context;
 
-    public ContextModule(Context context){
-            this.context = context;
+    public SearchContectmodule(Context context){
+        this.context = context;
     }
 
-    @Provides @ActivityScope
+    @Provides
+    @ActivityScope
     public Context getContext(){
         return context;
     }

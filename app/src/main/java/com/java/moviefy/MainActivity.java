@@ -9,13 +9,16 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.support.v7.widget.SearchView.OnCloseListener;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 
 import com.j256.ormlite.dao.Dao;
 import com.java.moviefy.adapter.LandingPageRecycleAdapter;
-import com.java.moviefy.database.helper.DatabaseHelper;
 import com.java.moviefy.entities.Movies;
 import com.java.moviefy.entities.Result;
 import com.java.moviefy.injection.Component.ContextComponent;
@@ -25,7 +28,6 @@ import com.java.moviefy.injection.Module.NetworkModule;
 import com.java.moviefy.network.service.GetMoviesService;
 import com.java.moviefy.network.service.SearchMoviesService;
 
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,8 +42,7 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 
-public class MainActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener{
-
+public class MainActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener {
 
     @BindView(R.id.recycler_landing_page)
     RecyclerView recyclerView;
@@ -61,7 +62,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     LandingPageRecycleAdapter adapter;
 
     @Inject
-    DatabaseHelper databaseHelper;
+    Dao userDao;
 
     @BindView(R.id.drawer_layout)
     DrawerLayout drawerLayout;
@@ -76,10 +77,14 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
 
     ContextComponent contextComponent;
 
+    ActionBarDrawerToggle toggle;
+
     private final String baseUrl = "https://api.themoviedb.org/3/";
 
     private List<Movies> moviesDataList;
-    List<Result> resultList;
+    private List<Result> resultList;
+    private List<Movies> searchResult;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,7 +109,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this,
+        toggle = new ActionBarDrawerToggle(this,
                 drawerLayout, toolbar, R.string.navigation_drawer_opened, R.string.navigation_drawer_closed);
         drawerLayout.setDrawerListener(toggle);
 
@@ -123,17 +128,16 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         // Default value for the flag = "Top Rated"
         // On application start default to rated movies will be get called
 
-        try {
-            Dao userDao = databaseHelper.getUserDao();
-            resultList = userDao.queryForAll();
-            refreshData(resultList.get(0).getResults());
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+//        try {
+//            resultList = userDao.queryForAll();
+//            refreshData(resultList.get(0).getResults());
+//        } catch (SQLException e) {
+//            e.printStackTrace();
+//        }
 
         networkFlag = getString(R.string.top_rated_movies);
 
-        //getTopRatedMovieNetworkCall();
+        getTopRatedMovieNetworkCall();
     }
     public void getUpcomingMovieNetworkCall(){
 
@@ -189,14 +193,6 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
                     @Override
                     public void onNext(Result result) {
                         moviesDataList = result.getResults();
-
-                        try {
-                            Dao userDao = databaseHelper.getUserDao();
-                            userDao.createOrUpdate(result);
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-
                     }
                 });
     }
@@ -319,6 +315,37 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
                 });
     }
 
+
+    public void getSearchForMovies(String query){
+        Map<String, String> queryMap = new HashMap<String, String>();
+        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
+        queryMap.put(getString(R.string.language), getString(R.string.en_US));
+        queryMap.put(getString(R.string.query), query);
+
+        searchMoviesService.getSearchedMovieList(queryMap)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Result>() {
+                    @Override
+                    public void onCompleted() {
+                        refreshData(searchResult);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e("Error ", "While fetching data from server");
+                        swipeRefreshLayout.setRefreshing(false);
+                    }
+
+                    @Override
+                    public void onNext(Result result) {
+                        searchResult = result.getResults();
+
+                    }
+                });
+    }
+
+
     private void refreshData(List<Movies> moviesDataList){
 
         if (adapter != null){
@@ -393,9 +420,52 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     }
 
     @Override
-    protected void onStop() {
-        super.onStop();
-        // Resources released on activity closed
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.search_menu, menu);
+
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.action_search).getActionView();
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Log.e("text changed: ", " :  "+newText);
+                if(newText.equals(""))
+                    refreshData(moviesDataList);
+                else
+                    getSearchForMovies(newText);
+
+
+                return false;
+            }
+        });
+
+
+        searchView.setOnCloseListener(new OnCloseListener() {
+
+            @Override
+            public boolean onClose() {
+
+                Log.e("SearchView:", " ****** onClose");
+
+                return false;
+            }
+        });
+
+
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         unbinder.unbind();
     }
 }
