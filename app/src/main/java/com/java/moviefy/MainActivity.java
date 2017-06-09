@@ -13,7 +13,9 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.j256.ormlite.dao.Dao;
 import com.java.moviefy.adapter.LandingPageRecycleAdapter;
+import com.java.moviefy.database.helper.DatabaseHelper;
 import com.java.moviefy.entities.Movies;
 import com.java.moviefy.entities.Result;
 import com.java.moviefy.injection.Component.ContextComponent;
@@ -23,6 +25,7 @@ import com.java.moviefy.injection.Module.NetworkModule;
 import com.java.moviefy.network.service.GetMoviesService;
 import com.java.moviefy.network.service.SearchMoviesService;
 
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +35,6 @@ import javax.inject.Inject;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import retrofit2.Retrofit;
 import rx.Observer;
 import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
@@ -59,7 +61,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     LandingPageRecycleAdapter adapter;
 
     @Inject
-    Retrofit retrofit;
+    DatabaseHelper databaseHelper;
 
     @BindView(R.id.drawer_layout)
     DrawerLayout drawerLayout;
@@ -77,7 +79,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     private final String baseUrl = "https://api.themoviedb.org/3/";
 
     private List<Movies> moviesDataList;
-    private List<Movies> tvShowDataList;
+    List<Result> resultList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,12 +122,18 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
 
         // Default value for the flag = "Top Rated"
         // On application start default to rated movies will be get called
+
+        try {
+            Dao userDao = databaseHelper.getUserDao();
+            resultList = userDao.queryForAll();
+            refreshData(resultList.get(0).getResults());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         networkFlag = getString(R.string.top_rated_movies);
 
-        getTopRatedMovieNetworkCall();
-
-
-
+        //getTopRatedMovieNetworkCall();
     }
     public void getUpcomingMovieNetworkCall(){
 
@@ -181,6 +189,14 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
                     @Override
                     public void onNext(Result result) {
                         moviesDataList = result.getResults();
+
+                        try {
+                            Dao userDao = databaseHelper.getUserDao();
+                            userDao.createOrUpdate(result);
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+
                     }
                 });
     }
@@ -285,6 +301,8 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
                     public void onCompleted() {
                         refreshData(moviesDataList);
                         swipeRefreshLayout.setRefreshing(false);
+
+
                     }
 
                     @Override
@@ -296,6 +314,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
                     @Override
                     public void onNext(Result result) {
                         moviesDataList = result.getResults();
+
                     }
                 });
     }

@@ -1,26 +1,48 @@
 package com.java.moviefy.entities;
 
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
+import java.io.Serializable;
+
 /**
  * Created by swapnil on 6/8/17.
  */
 
-public class Movies {
+@DatabaseTable
+public class Movies implements Serializable{
 
+    @DatabaseField
     private String original_name;
+    @DatabaseField
     private String name;
+    @DatabaseField
     private String first_air_date;
+    @DatabaseField
     private int vote_count;
+    @DatabaseField
     private int id;
+    @DatabaseField
     private boolean video;
+    @DatabaseField
     private float vote_average;
+    @DatabaseField
     private String title;
+    @DatabaseField
     private float popularity;
+    @DatabaseField
     private String poster_path;
+    @DatabaseField
     private String original_language;
+    @DatabaseField
     private String original_title;
+    @DatabaseField
     private String backdrop_path;
+    @DatabaseField
     private boolean adult;
+    @DatabaseField
     private String overview;
+    @DatabaseField
     private String release_date;
 
 

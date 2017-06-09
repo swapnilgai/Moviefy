@@ -1,18 +1,37 @@
 package com.java.moviefy.entities;
 
+import com.j256.ormlite.field.DataType;
+import com.j256.ormlite.field.DatabaseField;
+import com.j256.ormlite.table.DatabaseTable;
+
 import java.io.Serializable;
-import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Created by swapnil on 6/8/17.
  */
 
-public class Result implements Serializable {
+@DatabaseTable
+public class Result  implements Serializable {
 
+    @DatabaseField(generatedId = true)
+    private int id;
+    @DatabaseField
     private  int page;
+    @DatabaseField
     private int total_results;
+    @DatabaseField
     private  int total_pages;
-    private  List<Movies> results;
+    @DatabaseField(dataType = DataType.SERIALIZABLE)
+    private ArrayList<Movies> results;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public int getPage() {
         return page;
@@ -38,11 +57,11 @@ public class Result implements Serializable {
         this.total_pages = total_pages;
     }
 
-    public List<Movies> getResults() {
+    public ArrayList<Movies> getResults() {
         return results;
     }
 
-    public void setResults(List<Movies> results) {
+    public void setResults(ArrayList<Movies> results) {
         this.results = results;
     }
 
