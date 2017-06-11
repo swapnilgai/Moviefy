@@ -4,9 +4,10 @@ import android.content.Context;
 
 import com.j256.ormlite.dao.Dao;
 import com.java.moviefy.database.helper.DatabaseHelper;
-import com.java.moviefy.injection.CustomeScope.ActivityScope;
 
 import java.sql.SQLException;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -18,13 +19,13 @@ import dagger.Provides;
 @Module(includes = {ContextModule.class})
 public class DatabaseModule {
 
-    @Provides @ActivityScope
+    @Provides @Singleton
    public  DatabaseHelper getDatabaseHelper(Context context){
 
        return  new DatabaseHelper(context);
    }
 
-    @Provides @ActivityScope
+    @Provides @Singleton
    public Dao getUserDAO(DatabaseHelper databaseHelper){
        try {
            return   databaseHelper.getUserDao();

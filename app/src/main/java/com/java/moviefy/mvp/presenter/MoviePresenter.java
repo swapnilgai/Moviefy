@@ -20,7 +20,7 @@ public interface MoviePresenter {
 
     public void getPopularMovieData();
 
-    public void getPopularTvShowsData();
+    public List<Movies> getPopularTvShowsData();
 
     public void getTopRatedTvShowsData();
 

@@ -112,9 +112,6 @@ public class MainActivity extends AppCompatActivity  implements MainActivityView
             }
         });
 
-        // Default value for the flag = "Top Rated"
-        // On application start default to rated movies will be get called
-
         networkFlag = getString(R.string.top_rated_movies);
     }
 
@@ -266,5 +263,4 @@ public class MainActivity extends AppCompatActivity  implements MainActivityView
         super.onResume();
         moviePresenter.onResumePresenter();
     }
-
 }

@@ -28,10 +28,11 @@ public class MovieDAOImple implements  MovieDAO{
     }
 
     @Override
-    public List<Movies> getMoviesFromMoviesInDB() {
+    public Result getMoviesFromMoviesInDB() {
         try {
             List<Result> resultLst = userDao.queryForAll();
-            resultLst.stream().findFirst().map(e->e.getResults());
+            return resultLst.get(0);
+            //resultLst.stream().findFirst().map(e->e.getResults());
         } catch (SQLException e) {
             e.printStackTrace();
         }

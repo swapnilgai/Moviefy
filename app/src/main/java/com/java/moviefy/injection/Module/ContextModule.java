@@ -2,8 +2,9 @@ package com.java.moviefy.injection.Module;
 
 import android.content.Context;
 
-import com.java.moviefy.injection.CustomeScope.ActivityScope;
 import com.java.moviefy.mvp.view.MainActivityView;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -24,12 +25,12 @@ public class ContextModule {
             this.mainActivityView = mainActivityView;
     }
 
-    @Provides @ActivityScope
+    @Provides @Singleton
     public Context getContext(){
         return context;
     }
 
-    @Provides @ActivityScope
+    @Provides @Singleton
     public MainActivityView getView(){
         return  mainActivityView;
     }

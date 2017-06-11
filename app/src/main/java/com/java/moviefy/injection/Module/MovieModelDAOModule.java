@@ -1,9 +1,10 @@
 package com.java.moviefy.injection.Module;
 
 import com.j256.ormlite.dao.Dao;
-import com.java.moviefy.injection.CustomeScope.ActivityScope;
 import com.java.moviefy.mvp.model.MovieDAO;
 import com.java.moviefy.mvp.model.MovieDAOImple;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -15,7 +16,7 @@ import dagger.Provides;
 @Module(includes = {DatabaseModule.class})
 public class MovieModelDAOModule {
 
-    @Provides @ActivityScope
+    @Provides @Singleton
     public MovieDAO getMovieDAO(Dao userDao){
        return new MovieDAOImple(userDao);
     }

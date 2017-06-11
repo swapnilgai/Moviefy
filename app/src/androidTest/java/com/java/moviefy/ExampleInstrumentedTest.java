@@ -1,13 +1,15 @@
 package com.java.moviefy;
 
-import android.content.Context;
-import android.support.test.InstrumentationRegistry;
 import android.support.test.runner.AndroidJUnit4;
+
+import com.java.moviefy.mvp.presenter.MoviePresenter;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
+import javax.inject.Inject;
+
+import static org.junit.Assert.assertNotEquals;
 
 /**
  * Instrumentation test, which will execute on an Android device.
@@ -16,11 +18,14 @@ import static org.junit.Assert.*;
  */
 @RunWith(AndroidJUnit4.class)
 public class ExampleInstrumentedTest {
+
+
+
     @Test
     public void useAppContext() throws Exception {
         // Context of the app under test.
-        Context appContext = InstrumentationRegistry.getTargetContext();
+      // Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.java.moviefy", appContext.getPackageName());
+
     }
 }

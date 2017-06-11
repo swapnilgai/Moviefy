@@ -2,8 +2,9 @@ package com.java.moviefy.injection.Module;
 
 import android.content.Context;
 
-import com.java.moviefy.injection.CustomeScope.ActivityScope;
 import com.squareup.picasso.Picasso;
+
+import javax.inject.Singleton;
 
 import dagger.Module;
 import dagger.Provides;
@@ -16,7 +17,7 @@ import dagger.Provides;
 @Module(includes = {ContextModule.class})
 public class ImageModule {
 
-    @Provides @ActivityScope
+    @Provides @Singleton
     public Picasso getPicasso(Context context){
       return new  Picasso.Builder(context).build();
     }
