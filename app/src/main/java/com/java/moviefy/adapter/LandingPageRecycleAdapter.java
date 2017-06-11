@@ -10,7 +10,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.java.moviefy.R;
-import com.java.moviefy.entities.Movies;
+import com.java.moviefy.mvp.model.Movies;
 import com.java.moviefy.utils.ArrayRecyclerAdapter;
 import com.squareup.picasso.Picasso;
 

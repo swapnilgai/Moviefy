@@ -10,39 +10,34 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SearchView.OnCloseListener;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.Toast;
 
-import com.j256.ormlite.dao.Dao;
 import com.java.moviefy.adapter.LandingPageRecycleAdapter;
-import com.java.moviefy.entities.Movies;
-import com.java.moviefy.entities.Result;
 import com.java.moviefy.injection.Component.ContextComponent;
 import com.java.moviefy.injection.Component.DaggerContextComponent;
 import com.java.moviefy.injection.Module.ContextModule;
 import com.java.moviefy.injection.Module.NetworkModule;
-import com.java.moviefy.network.service.GetMoviesService;
-import com.java.moviefy.network.service.SearchMoviesService;
+import com.java.moviefy.mvp.model.Movies;
+import com.java.moviefy.mvp.presenter.MoviePresenter;
+import com.java.moviefy.mvp.view.MainActivityView;
 
-import java.util.HashMap;
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
-import rx.Observer;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.schedulers.Schedulers;
 
 
-public class MainActivity extends AppCompatActivity  implements NavigationView.OnNavigationItemSelectedListener {
+
+public class MainActivity extends AppCompatActivity  implements MainActivityView, NavigationView.OnNavigationItemSelectedListener {
 
     @BindView(R.id.recycler_landing_page)
     RecyclerView recyclerView;
@@ -53,16 +48,10 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
     Unbinder unbinder;
 
     @Inject
-    GetMoviesService getMoviesService;
-
-    @Inject
-    SearchMoviesService searchMoviesService;
-
-    @Inject
     LandingPageRecycleAdapter adapter;
 
     @Inject
-    Dao userDao;
+    MoviePresenter moviePresenter;
 
     @BindView(R.id.drawer_layout)
     DrawerLayout drawerLayout;
@@ -81,10 +70,8 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
 
     private final String baseUrl = "https://api.themoviedb.org/3/";
 
-    private List<Movies> moviesDataList;
-    private List<Result> resultList;
-    private List<Movies> searchResult;
 
+    private final String ERROR_MESSAGE = "Error, while loading data";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,7 +81,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         unbinder = ButterKnife.bind(this);
 
         contextComponent = DaggerContextComponent.builder()
-                            .contextModule(new ContextModule(this))
+                            .contextModule(new ContextModule(this, this))
                             .networkModule(new NetworkModule(baseUrl))
                             .build();
 
@@ -128,226 +115,21 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         // Default value for the flag = "Top Rated"
         // On application start default to rated movies will be get called
 
-//        try {
-//            resultList = userDao.queryForAll();
-//            refreshData(resultList.get(0).getResults());
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//        }
-
         networkFlag = getString(R.string.top_rated_movies);
-
-        getTopRatedMovieNetworkCall();
-    }
-    public void getUpcomingMovieNetworkCall(){
-
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-
-        getMoviesService.getUpcomingMovieList(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(moviesDataList);
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        moviesDataList = result.getResults();
-                    }
-                });
     }
 
-    public void getTopRatedMovieNetworkCall(){
-
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-
-        getMoviesService.getTopRatedMovieList(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(moviesDataList);
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        moviesDataList = result.getResults();
-                    }
-                });
+    @Override
+    public void setSwipeToRefreshOnRefreshing() {
+        swipeRefreshLayout.setRefreshing(true);
     }
 
-    public void getNowPlayingMovieNetworkCall(){
-
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-
-        getMoviesService.getNoePlayingMovielist(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(moviesDataList);
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        moviesDataList = result.getResults();
-                    }
-                });
+    @Override
+    public void setSwipeToRefreshOffRefreshing() {
+            swipeRefreshLayout.setRefreshing(false);
     }
 
-
-    public void getpopularMovieNetworkCall(){
-
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-
-        getMoviesService.getPopularMovieList(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(moviesDataList);
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        moviesDataList = result.getResults();
-                    }
-                });
-    }
-
-    public void getPopularTvShowsNetworkCall(){
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-
-        getMoviesService.getPopularTvShows(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(moviesDataList);
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        moviesDataList = result.getResults();
-                    }
-                });
-    }
-
-    public void getTopRatedTvShowsNetworkCall(){
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-
-        getMoviesService.getTopRatedMovieList(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(moviesDataList);
-                        swipeRefreshLayout.setRefreshing(false);
-
-
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        moviesDataList = result.getResults();
-
-                    }
-                });
-    }
-
-
-    public void getSearchForMovies(String query){
-        Map<String, String> queryMap = new HashMap<String, String>();
-        queryMap.put(getString(R.string.api_key), getString(R.string.api_key_value));
-        queryMap.put(getString(R.string.language), getString(R.string.en_US));
-        queryMap.put(getString(R.string.query), query);
-
-        searchMoviesService.getSearchedMovieList(queryMap)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Result>() {
-                    @Override
-                    public void onCompleted() {
-                        refreshData(searchResult);
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.e("Error ", "While fetching data from server");
-                        swipeRefreshLayout.setRefreshing(false);
-                    }
-
-                    @Override
-                    public void onNext(Result result) {
-                        searchResult = result.getResults();
-
-                    }
-                });
-    }
-
-
-    private void refreshData(List<Movies> moviesDataList){
-
+    @Override
+    public void refreshData(List<Movies> moviesDataList) {
         if (adapter != null){
             adapter.clear();
             adapter.addAll(moviesDataList);
@@ -355,32 +137,43 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         }
     }
 
+    @Override
+    public void getShowErrorMessage() {
+        Toast.makeText(this, ERROR_MESSAGE, Toast.LENGTH_LONG);
+    }
+
+    @Override
+    public void setNetworkFlag(String flag) {
+        networkFlag = flag;
+    }
+
+    @Override
+    public String getNetworkFlag() {
+        return networkFlag;
+    }
 
     public void getNetworkCallResultForOnSwipToRefresh(){
 
         switch (networkFlag){
             case "top_rated_movies":
-                getTopRatedMovieNetworkCall();
+                moviePresenter.getTopRatedMovieData();
                 break;
             case "upcoming_movies":
-                getUpcomingMovieNetworkCall();
+                moviePresenter.getUpcomingMovieData();
                 break;
             case "now_playing_movies":
-                getNowPlayingMovieNetworkCall();
+                moviePresenter.getNowPlayingMovieData();
                 break;
             case "popular_movies":
-                getNowPlayingMovieNetworkCall();
+               moviePresenter.getPopularMovieData();
                 break;
             case "popular_tv_shows":
-                getPopularTvShowsNetworkCall();
+                moviePresenter.getPopularTvShowsData();
                 break;
             case "top_rated_tv_shows":
-                getTopRatedTvShowsNetworkCall();
+               moviePresenter.getPopularTvShowsData();
                 break;
             default:
-                swipeRefreshLayout.setRefreshing(false);
-
-
         }
     }
 
@@ -395,22 +188,22 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         int id = item.getItemId();
         switch (id){
             case R.id.top_rated:
-                getTopRatedMovieNetworkCall();
+                moviePresenter.getTopRatedMovieData();
                 break;
             case R.id.upcoming:
-                getUpcomingMovieNetworkCall();
+                moviePresenter.getUpcomingMovieData();
                 break;
             case R.id.now_playing:
-                getNowPlayingMovieNetworkCall();
+                moviePresenter.getNowPlayingMovieData();
                 break;
             case R.id.popular_movies:
-                getpopularMovieNetworkCall();
+                moviePresenter.getPopularMovieData();
                 break;
             case R.id.popular_TV_shows:
-                getPopularTvShowsNetworkCall();
+                moviePresenter.getPopularTvShowsData();
                 break;
             case R.id.top_rated_TV_shows:
-                getTopRatedTvShowsNetworkCall();
+                moviePresenter.getTopRatedTvShowsData();
                 break;
             default:
                 break;
@@ -436,24 +229,7 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                Log.e("text changed: ", " :  "+newText);
-                if(newText.equals(""))
-                    refreshData(moviesDataList);
-                else
-                    getSearchForMovies(newText);
-
-
-                return false;
-            }
-        });
-
-
-        searchView.setOnCloseListener(new OnCloseListener() {
-
-            @Override
-            public boolean onClose() {
-
-                Log.e("SearchView:", " ****** onClose");
+                    moviePresenter.getSearchForMovies(newText);
 
                 return false;
             }
@@ -468,4 +244,27 @@ public class MainActivity extends AppCompatActivity  implements NavigationView.O
         super.onDestroy();
         unbinder.unbind();
     }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        //Store activity state for rotation
+        outState.putSerializable(getString(R.string.result_data_object), (Serializable) moviePresenter.getMovieLst());
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+
+        super.onRestoreInstanceState(savedInstanceState);
+        //Restore activity state on rotation
+        moviePresenter.setMovieLst((ArrayList<Movies>) savedInstanceState.getSerializable(getString(R.string.result_data_object)));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        moviePresenter.onResumePresenter();
+    }
+
 }

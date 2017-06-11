@@ -1,6 +1,6 @@
 package com.java.moviefy.network.service;
 
-import com.java.moviefy.entities.Result;
+import com.java.moviefy.mvp.model.Result;
 
 import java.util.Map;
 
